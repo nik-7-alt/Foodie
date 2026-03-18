@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Street Cafe | Enterprise Edition</title>
     <style>
-        /* 1. Gradient Blue Background applied here! */
+        /* Gradient Backgrounds */
         :root { --primary: #e67e22; --bg-color: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); --text-color: #2c3e50; --card-bg: white; --header-bg: white; --border-color: #eee; }
-        .dark-mode { --bg-color: linear-gradient(135deg, #141e30 0%, #243b55 100%); --text-color: #f4f4f4; --card-bg: #1e1e1e; --header-bg: #1a1a1a; --border-color: #333; }
+        .dark-mode { --primary: #e67e22; --bg-color: linear-gradient(135deg, #141e30 0%, #243b55 100%); --text-color: #f4f4f4; --card-bg: #1e1e1e; --header-bg: #1a1a1a; --border-color: #333; }
 
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg-color); background-attachment: fixed; color: var(--text-color); padding-bottom: 100px; transition: 0.3s; }
         
@@ -57,26 +57,20 @@
         .qty-controls { display: flex; align-items: center; gap: 10px; }
         .qty-btn { background: var(--primary); color: white; border: none; border-radius: 5px; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
         
-        /* 5. Required Asterisk CSS */
         .req::after { content: " *"; color: red; }
         
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: bold; }
-        .input-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); box-sizing: border-box; }
+        .input-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); box-sizing: border-box; font-family: inherit; }
         
         .payment-section label { display: block; margin-bottom: 10px; font-size: 1rem; cursor: pointer; }
         .action-btn { background: #27ae60; color: white; border: none; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .secondary-btn { background: #7f8c8d; color: white; border: none; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* Order Tracking Card UI */
         .order-history-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .status-badge { background: #f39c12; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; }
-        
-        /* 7. Checklist Tracking UI */
         .tracking-list { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.9rem; }
         .track-step { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; color: #7f8c8d; }
         .track-step.done { color: #27ae60; font-weight: bold; }
-
     </style>
 </head>
 <body>
@@ -85,6 +79,7 @@
     <h1>Street Cafe <span id="adminGreeting" style="font-size:0.9rem; color:#7f8c8d; font-weight:normal;"></span></h1>
     <div class="controls">
         <input type="text" class="search-bar" id="searchInput" placeholder="Search menu..." onkeyup="searchMenu()">
+        <button class="icon-btn" onclick="toggleDarkMode()">🌙</button>
         <button class="icon-btn" id="adminDashBtn" style="display:none; background:#8e44ad; color:white; border:none;" onclick="openModal('adminDashboardModal')">⚙️ Panel</button>
         <button class="icon-btn" onclick="openTrackingDashboard()">📦 Track</button>
         <button class="icon-btn" id="adminToggleBtn" onclick="adminLogin()">Admin</button>
@@ -92,7 +87,6 @@
 </header>
 
 <div class="menu-tabs" id="tabContainer"></div>
-
 <div class="menu-section" id="menuDisplay"></div>
 
 <div class="cart-bar" onclick="viewCart()">
@@ -144,8 +138,30 @@
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal('cartModal')">✖</span>
         <h2 style="margin-top: 0;">Your Cart</h2>
+        
         <div id="cart-items-list" style="margin-bottom: 15px;"></div>
-        <h3 id="modal-total-display" style="color: var(--primary); text-align: right; border-top: 2px solid var(--border-color); padding-top: 10px;">Total: ₹0</h3>
+        <h3 id="modal-total-display" style="color: var(--primary); text-align: right; border-top: 2px solid var(--border-color); padding-top: 10px; margin-bottom: 20px;">Total: ₹0</h3>
+        
+        <div class="input-group">
+            <label>Condiments & Extras (Free)</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px;">
+                <label><input type="checkbox" class="condiment" value="Tomato Sauce"> Tomato Sauce</label>
+                <label><input type="checkbox" class="condiment" value="Chilli Sauce"> Chilli Sauce</label>
+                <label><input type="checkbox" class="condiment" value="Mayonnaise"> Mayonnaise</label>
+                <label><input type="checkbox" class="condiment" value="Oregano"> Oregano</label>
+                <label><input type="checkbox" class="condiment" value="Chilli Flakes"> Chilli Flakes</label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label><input type="checkbox" id="needCutlery"> Send Cutlery (Spoons/Forks) 🍴</label>
+        </div>
+        
+        <div class="input-group">
+            <label>Cooking Instructions</label>
+            <textarea id="orderNotes" class="input-box" rows="2" placeholder="e.g. Make it extra spicy, no onions..."></textarea>
+        </div>
+
         <button class="action-btn" onclick="proceedToCheckout()">Proceed to Checkout ➔</button>
     </div>
 </div>
@@ -165,7 +181,6 @@
         <div class="input-group"><label class="req">Customer Name</label><input type="text" id="custName" class="input-box" placeholder="Enter your name" required></div>
         <div class="input-group"><label class="req">Phone Number</label><input type="tel" id="custPhone" class="input-box" placeholder="Enter phone number" required></div>
         <div class="input-group"><label class="req">Delivery Address</label><textarea id="custAddress" class="input-box" rows="2" placeholder="House no, Street..." required></textarea></div>
-        
         <div class="input-group"><label>Schedule Time (Optional)</label><input type="time" id="scheduleTime" class="input-box"></div>
         
         <button class="action-btn" onclick="proceedToPayment()">Proceed to Payment ➔</button>
@@ -220,6 +235,7 @@
         <button class="action-btn" style="margin-top: 20px;" onclick="closeModal('successModal'); openTrackingDashboard();">Track Order Progress</button>
     </div>
 </div>
+
 <script>
     let isAdmin = false;
     let loggedInAdminName = "";
@@ -227,6 +243,9 @@
     let currentCategory = "Combos & Offers 🎁";
     let menuData = {}; 
     let myOrderHistory = JSON.parse(localStorage.getItem('cafe_orders')) || [];
+
+    // RESTORED: Dark Mode Toggle Function
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 
     // DATA FETCH
     async function loadMenuFromDatabase() {
@@ -245,7 +264,7 @@
         }
     }
 
-    // 6. ADMIN LOGIN (Captures Name & Password)
+    // ADMIN LOGIN
     function adminLogin() {
         if(isAdmin) { 
             isAdmin = false; 
@@ -272,7 +291,7 @@
         }
     }
 
-    // 4. ADMIN EDIT/DELETE FOOD UI
+    // ADMIN UI CONTROLS
     async function editItemData(icode, itemName, currentPrice) {
         let newPrice = prompt(`Enter new price for ${itemName}:`, currentPrice);
         if(!newPrice || isNaN(newPrice)) return;
@@ -286,6 +305,31 @@
         } catch (error) { alert("Server error updating item."); }
     }
 
+    async function deleteFoodItem(itemName) {
+        if(confirm(`Are you sure you want to permanently delete ${itemName}?`)) {
+            try {
+                await fetch(`/api/menu/delete/${encodeURIComponent(itemName)}`, { method: 'DELETE' });
+                loadMenuFromDatabase(); 
+            } catch (error) { alert("Server error. Could not delete item."); }
+        }
+    }
+
+    async function addFoodItem() {
+        let name = document.getElementById('newFoodName').value;
+        let price = document.getElementById('newFoodPrice').value;
+        let category = document.getElementById('newFoodCat').value;
+        if(!name || !price) return alert("Fill out food name and price.");
+        try {
+            await fetch('/api/menu/add', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ category: category, idesc: name, price: parseFloat(price) })
+            });
+            alert(`${name} successfully added!`);
+            document.getElementById('newFoodName').value = "";
+            document.getElementById('newFoodPrice').value = "";
+            loadMenuFromDatabase(); 
+        } catch (error) { alert("Server error. Could not add item."); }
+    }
 
     // TABS & RENDERING
     function renderTabs() {
@@ -321,33 +365,16 @@
         const grid = document.querySelector('.grid') || document.createElement('div');
         if(!document.querySelector('.grid')) { grid.className = 'grid'; document.getElementById('menuDisplay').appendChild(grid); }
         grid.innerHTML = "";
-
         if(items.length === 0) { grid.innerHTML = "<p>No items found.</p>"; return; }
 
         items.forEach((item) => {
             const outOfStockHtml = !item.available ? `<span class="out-stock-badge">Out of Stock</span>` : '';
             const imgClass = !item.available ? 'item-img dimmed' : 'item-img';
             const imgUrl = `https://placehold.co/400x300/e67e22/ffffff?text=${encodeURIComponent(item.n)}`;
-            
             let addBtn = !item.available ? `<button class="add-btn" disabled>Out of Stock</button>` : `<button class="add-btn" onclick="addToCart('${item.n}', ${item.p})">+ Add</button>`;
-            
-            // 4. Admin controls now have a Delete button
-            let adminBtn = isAdmin ? `
-                <button class="admin-edit-btn" onclick="editItemData(${item.icode}, '${item.n}', ${item.p})">✏️ Edit</button>
-                <button class="admin-del-btn" onclick="deleteFoodItem('${item.n}')">🗑️ Remove</button>
-            ` : '';
+            let adminBtn = isAdmin ? `<button class="admin-edit-btn" onclick="editItemData(${item.icode}, '${item.n}', ${item.p})">✏️ Edit</button><button class="admin-del-btn" onclick="deleteFoodItem('${item.n}')">🗑️ Remove</button>` : '';
 
-            grid.innerHTML += `
-                <div class="item-card">
-                    ${item.f === 'special' ? `<span class="badge">🔥 Special</span>` : ''}
-                    ${outOfStockHtml}
-                    <img src="${imgUrl}" class="${imgClass}">
-                    <div class="item-info">
-                        <h4>${item.n}</h4><span class="price">₹${item.p}</span>
-                        ${addBtn} ${adminBtn}
-                    </div>
-                </div>
-            `;
+            grid.innerHTML += `<div class="item-card">${item.f === 'special' ? `<span class="badge">🔥 Special</span>` : ''}${outOfStockHtml}<img src="${imgUrl}" class="${imgClass}"><div class="item-info"><h4>${item.n}</h4><span class="price">₹${item.p}</span>${addBtn} ${adminBtn}</div></div>`;
         });
     }
 
@@ -360,17 +387,15 @@
         document.getElementById('cart-count').innerText = `🛒 ${cart.reduce((s, i) => s + i.qty, 0)} Items`;
         document.getElementById('cart-total').innerText = `Total: ₹${tot}`;
         document.getElementById('pay-amount-display').innerText = `₹${tot}`;
-        document.getElementById('cardChargeAmount').innerText = `₹${tot}`; // Feature 3 logic
+        document.getElementById('cardChargeAmount').innerText = `₹${tot}`;
     }
     function renderModalItems() {
         const list = document.getElementById('cart-items-list'); list.innerHTML = "";
-        cart.forEach((item, index) => {
-            list.innerHTML += `<div class="cart-item-row"><span>${item.name}<br>₹${item.price}</span><div class="qty-controls"><button class="qty-btn" onclick="changeQty(${index}, -1)">-</button><span>${item.qty}</span><button class="qty-btn" onclick="changeQty(${index}, 1)">+</button></div><b>₹${item.price * item.qty}</b></div>`;
-        });
+        cart.forEach((item, index) => { list.innerHTML += `<div class="cart-item-row"><span>${item.name}<br>₹${item.price}</span><div class="qty-controls"><button class="qty-btn" onclick="changeQty(${index}, -1)">-</button><span>${item.qty}</span><button class="qty-btn" onclick="changeQty(${index}, 1)">+</button></div><b>₹${item.price * item.qty}</b></div>`; });
         document.getElementById('modal-total-display').innerText = `Total: ₹${cart.reduce((s, i) => s + (i.price * i.qty), 0)}`;
     }
 
-    // CHECKOUT & PAYMENT UI
+    // CHECKOUT
     function proceedToCheckout() { closeModal('cartModal'); openModal('checkoutModal'); }
     function proceedToPayment() {
         const name = document.getElementById('custName').value;
@@ -380,20 +405,25 @@
         closeModal('checkoutModal'); openModal('paymentModal');
     }
 
-    // 3. Toggle Credit/Debit Card Fields automatically
     function togglePaymentUI() {
         let method = document.querySelector('input[name="pay_mode"]:checked').value;
         document.getElementById('qrCodeBox').style.display = method === 'UPI' ? 'block' : 'none';
         document.getElementById('cardInputBox').style.display = method === 'Card' ? 'block' : 'none';
     }
 
-    // PROCESS ORDER
+    // PROCESS ORDER (Now captures condiments, cutlery, and notes)
     async function processOrder() {
         const name = document.getElementById('custName').value;
         const phone = document.getElementById('custPhone').value;
         const totalAmount = cart.reduce((s, i) => s + (i.price * i.qty), 0);
         const method = document.querySelector('input[name="pay_mode"]:checked').value;
         const schedTime = document.getElementById('scheduleTime').value;
+
+        // RESTORED: Capture the extra details from the cart
+        const notes = document.getElementById('orderNotes').value;
+        const cutlery = document.getElementById('needCutlery').checked ? "Yes" : "No";
+        let condiments = [];
+        document.querySelectorAll('.condiment:checked').forEach(cb => condiments.push(cb.value));
 
         try {
             await fetch('/api/order', {
@@ -403,15 +433,15 @@
 
             const orderId = Math.floor(Math.random() * 90000) + 10000;
             
-            // Save locally for dashboard
+            // Save locally with the extras attached
             myOrderHistory.unshift({ 
                 id: orderId, items: [...cart], total: totalAmount, 
-                date: new Date().toISOString().split('T')[0], // Save YYYY-MM-DD for searching
-                status: "Preparing", sched: schedTime 
+                date: new Date().toISOString().split('T')[0],
+                status: "Preparing", sched: schedTime,
+                notes: notes, cutlery: cutlery, condiments: condiments 
             });
             localStorage.setItem('cafe_orders', JSON.stringify(myOrderHistory));
 
-            // Set SMS Data
             document.getElementById('genOrderId').innerText = orderId;
             document.getElementById('displaySentPhone').innerText = phone.slice(-10);
             document.getElementById('receiptName').innerText = name.split(" ")[0];
@@ -420,11 +450,17 @@
 
             closeModal('paymentModal');
             cart = []; updateCartDisplay();
+            
+            // Reset fields
+            document.getElementById('orderNotes').value = "";
+            document.getElementById('needCutlery').checked = false;
+            document.querySelectorAll('.condiment:checked').forEach(cb => cb.checked = false);
+
             openModal('successModal');
         } catch (error) { alert("Server error submitting order."); }
     }
 
-    // 7. USER TRACKING DASHBOARD (Checklist UI)
+    // USER TRACKING DASHBOARD (Now shows notes/condiments)
     function openTrackingDashboard() {
         const list = document.getElementById('tracking-list');
         list.innerHTML = myOrderHistory.length === 0 ? "<p>No orders yet.</p>" : myOrderHistory.map(order => `
@@ -432,6 +468,13 @@
                 <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
                     <span>Order #${order.id}</span><span>₹${order.total}</span>
                 </div>
+                
+                <div style="font-size:0.85rem; margin-bottom: 10px; color: #555;">
+                    ${order.condiments && order.condiments.length > 0 ? `<strong>Condiments:</strong> ${order.condiments.join(', ')}<br>` : ''}
+                    ${order.cutlery === 'Yes' ? `<strong>Cutlery:</strong> Requested 🍴<br>` : ''}
+                    ${order.notes ? `<strong>Notes:</strong> ${order.notes}<br>` : ''}
+                </div>
+
                 <div class="tracking-list">
                     <div class="track-step done">✅ Order Placed & Paid</div>
                     <div class="track-step done">✅ Sent to Kitchen</div>
@@ -445,13 +488,11 @@
         openModal('trackingModal');
     }
 
-    // 10. ADMIN DASHBOARD & DATE SEARCH
+    // ADMIN DASHBOARD
     function filterAdminOrders() {
         const searchDate = document.getElementById('adminDateSearch').value;
         const list = document.getElementById('admin-orders-list');
-        
         let filtered = searchDate ? myOrderHistory.filter(o => o.date === searchDate) : myOrderHistory;
-        
         let rev = 0;
         list.innerHTML = filtered.length === 0 ? "<p>No orders found for this date.</p>" : filtered.map(order => {
             rev += order.total;
@@ -459,17 +500,17 @@
             <div class="order-history-card" style="font-size: 0.9rem;">
                 <b>Order #${order.id}</b> | ₹${order.total} <br>
                 ${order.sched ? `<span style="color:#e74c3c;">⏰ Scheduled for: ${order.sched}</span><br>` : ''}
-                Items: ${order.items.map(i => i.qty + 'x ' + i.name).join(', ')}
+                Items: ${order.items.map(i => i.qty + 'x ' + i.name).join(', ')} <br>
+                ${order.notes ? `<i>Notes: ${order.notes}</i>` : ''}
             </div>
             `;
         }).join('');
-        
         document.getElementById('adminTotalRev').innerText = rev;
     }
 
     function openModal(id) {
         document.getElementById(id).style.display = 'flex';
-        if(id === 'adminDashboardModal') filterAdminOrders(); // Load all orders initially
+        if(id === 'adminDashboardModal') filterAdminOrders(); 
     }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
