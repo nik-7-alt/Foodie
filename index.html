@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Street Cafe | Enterprise Edition</title>
+    <style>
+        /* 1. Gradient Blue Background applied here! */
+        :root { --primary: #e67e22; --bg-color: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); --text-color: #2c3e50; --card-bg: white; --header-bg: white; --border-color: #eee; }
+        .dark-mode { --bg-color: linear-gradient(135deg, #141e30 0%, #243b55 100%); --text-color: #f4f4f4; --card-bg: #1e1e1e; --header-bg: #1a1a1a; --border-color: #333; }
+
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg-color); background-attachment: fixed; color: var(--text-color); padding-bottom: 100px; transition: 0.3s; }
+        
+        header { background: var(--header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        header h1 { margin: 0; font-size: 1.5rem; color: var(--primary); font-weight: 800; }
+        
+        .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .icon-btn { background: none; border: 1px solid var(--primary); color: var(--text-color); padding: 5px 10px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: 0.2s; }
+        .icon-btn:hover { background: var(--primary); color: white; }
+        .search-bar { padding: 8px 10px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); outline: none; width: 110px; font-size: 0.85rem; }
+
+        .menu-tabs { display: flex; overflow-x: auto; gap: 8px; background: var(--header-bg); padding: 10px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; scrollbar-width: none; }
+        .menu-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { padding: 8px 16px; border: 1px solid var(--border-color); background: var(--card-bg); border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.9rem; color: var(--text-color); transition: 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .menu-section { padding: 20px; max-width: 1200px; margin: auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        
+        .item-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; flex-direction: column; border: 1px solid var(--border-color); position: relative; transition: 0.3s; }
+        .item-img { width: 100%; height: 130px; object-fit: cover; border-bottom: 2px solid var(--primary); background: #ddd; transition: 0.3s; }
+        .dimmed { opacity: 0.4; filter: grayscale(100%); } 
+        
+        .badge { position: absolute; top: 10px; left: 10px; background: #e74c3c; color: white; padding: 3px 8px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; z-index: 2; }
+        .out-stock-badge { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; font-size: 0.9rem; font-weight: bold; border-radius: 5px; z-index: 2; border: 1px solid white; white-space: nowrap;}
+        
+        .item-info { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
+        .item-info h4 { margin: 0 0 5px; font-size: 0.95rem; line-height: 1.3; }
+        .price { color: var(--primary); font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; }
+        
+        .add-btn { background: var(--card-bg); color: var(--primary); border: 2px solid var(--primary); padding: 8px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: auto; transition: 0.2s; }
+        .add-btn:hover:not(:disabled) { background: var(--primary); color: white; }
+        .add-btn:disabled { background: #eee; border-color: #ccc; color: #999; cursor: not-allowed; }
+
+        .admin-edit-btn { background: #3498db; color: white; border: none; padding: 6px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; margin-top: 8px; cursor: pointer; width: 100%; }
+        .admin-del-btn { background: #e74c3c; color: white; border: none; padding: 6px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; margin-top: 4px; cursor: pointer; width: 100%; }
+
+        .cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-sizing: border-box; font-size: 1.1rem; z-index: 90; box-shadow: 0 -4px 15px rgba(0,0,0,0.2); }
+        
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 200; justify-content: center; align-items: flex-end; }
+        .modal-content { background: var(--card-bg); color: var(--text-color); width: 100%; max-width: 500px; padding: 20px; border-radius: 20px 20px 0 0; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
+        .cart-item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 0.95rem; }
+        .qty-controls { display: flex; align-items: center; gap: 10px; }
+        .qty-btn { background: var(--primary); color: white; border: none; border-radius: 5px; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
+        
+        /* 5. Required Asterisk CSS */
+        .req::after { content: " *"; color: red; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: bold; }
+        .input-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-color); box-sizing: border-box; }
+        
+        .payment-section label { display: block; margin-bottom: 10px; font-size: 1rem; cursor: pointer; }
+        .action-btn { background: #27ae60; color: white; border: none; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .secondary-btn { background: #7f8c8d; color: white; border: none; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* Order Tracking Card UI */
+        .order-history-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .status-badge { background: #f39c12; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; }
+        
+        /* 7. Checklist Tracking UI */
+        .tracking-list { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 8px; font-size: 0.9rem; }
+        .track-step { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; color: #7f8c8d; }
+        .track-step.done { color: #27ae60; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Street Cafe <span id="adminGreeting" style="font-size:0.9rem; color:#7f8c8d; font-weight:normal;"></span></h1>
+    <div class="controls">
+        <input type="text" class="search-bar" id="searchInput" placeholder="Search menu..." onkeyup="searchMenu()">
+        <button class="icon-btn" id="adminDashBtn" style="display:none; background:#8e44ad; color:white; border:none;" onclick="openModal('adminDashboardModal')">⚙️ Panel</button>
+        <button class="icon-btn" onclick="openTrackingDashboard()">📦 Track</button>
+        <button class="icon-btn" id="adminToggleBtn" onclick="adminLogin()">Admin</button>
+    </div>
+</header>
+
+<div class="menu-tabs" id="tabContainer"></div>
+
+<div class="menu-section" id="menuDisplay"></div>
+
+<div class="cart-bar" onclick="viewCart()">
+    <span id="cart-count">🛒 0 Items</span>
+    <span id="cart-total">Total: ₹0</span>
+    <strong>View Cart ➔</strong>
+</div>
+
+<div class="modal-overlay" id="adminDashboardModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('adminDashboardModal')">✖</span>
+        <h2 style="margin-top: 0; color: #8e44ad;">Admin Dashboard</h2>
+        
+        <div style="background: rgba(142, 68, 173, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+            <h4 style="margin: 0 0 10px 0;">➕ Add New Menu Item</h4>
+            <input type="text" id="newFoodName" class="input-box" placeholder="Food Name" style="margin-bottom: 5px;">
+            <input type="number" id="newFoodPrice" class="input-box" placeholder="Price (₹)" style="margin-bottom: 5px;">
+            <select id="newFoodCat" class="input-box" style="margin-bottom: 5px;">
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Snacks">Snacks</option>
+            </select>
+            <button class="action-btn" style="background: #8e44ad; padding: 8px;" onclick="addFoodItem()">Add to Menu</button>
+        </div>
+
+        <div class="input-group">
+            <label>Search Orders by Date</label>
+            <div style="display:flex; gap:10px;">
+                <input type="date" id="adminDateSearch" class="input-box">
+                <button class="icon-btn" style="background:var(--primary); color:white;" onclick="filterAdminOrders()">Search</button>
+            </div>
+        </div>
+        
+        <h3 style="color: #27ae60;">Total Revenue: ₹<span id="adminTotalRev">0</span></h3>
+        <div id="admin-orders-list"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="trackingModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('trackingModal')">✖</span>
+        <h2 style="margin-top: 0;">My Orders</h2>
+        <div id="tracking-list"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="cartModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('cartModal')">✖</span>
+        <h2 style="margin-top: 0;">Your Cart</h2>
+        <div id="cart-items-list" style="margin-bottom: 15px;"></div>
+        <h3 id="modal-total-display" style="color: var(--primary); text-align: right; border-top: 2px solid var(--border-color); padding-top: 10px;">Total: ₹0</h3>
+        <button class="action-btn" onclick="proceedToCheckout()">Proceed to Checkout ➔</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="checkoutModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('checkoutModal')">✖</span>
+        <h2 style="margin-top: 0;">Checkout Details</h2>
+        
+        <div class="input-group"><label>Order Type</label>
+            <select id="orderType" class="input-box">
+                <option value="Delivery">Home Delivery 🛵</option>
+                <option value="Pickup">Takeaway / Pickup 🛍️</option>
+            </select>
+        </div>
+        
+        <div class="input-group"><label class="req">Customer Name</label><input type="text" id="custName" class="input-box" placeholder="Enter your name" required></div>
+        <div class="input-group"><label class="req">Phone Number</label><input type="tel" id="custPhone" class="input-box" placeholder="Enter phone number" required></div>
+        <div class="input-group"><label class="req">Delivery Address</label><textarea id="custAddress" class="input-box" rows="2" placeholder="House no, Street..." required></textarea></div>
+        
+        <div class="input-group"><label>Schedule Time (Optional)</label><input type="time" id="scheduleTime" class="input-box"></div>
+        
+        <button class="action-btn" onclick="proceedToPayment()">Proceed to Payment ➔</button>
+        <button class="secondary-btn" onclick="closeModal('checkoutModal'); openModal('cartModal');">⬅ Back to Cart</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="paymentModal">
+    <div class="modal-content" id="paymentContent">
+        <span class="close-btn" onclick="closeModal('paymentModal')">✖</span>
+        <h2 style="margin-top: 0;">Payment</h2>
+        <h3 style="color: var(--primary); text-align: center;">Amount to Pay: <span id="pay-amount-display">₹0</span></h3>
+        
+        <div class="payment-section">
+            <label><input type="radio" name="pay_mode" value="UPI" onchange="togglePaymentUI()" checked> UPI (GPay/PhonePe)</label>
+            <label><input type="radio" name="pay_mode" value="Card" onchange="togglePaymentUI()"> Credit/Debit Card</label>
+            <label><input type="radio" name="pay_mode" value="Cash" onchange="togglePaymentUI()"> Cash on Delivery</label>
+        </div>
+        
+        <div id="qrCodeBox" style="text-align: center; margin-top: 15px; padding: 15px; background: white; border-radius: 10px; border: 2px dashed var(--primary);">
+            <p style="margin-top:0; font-weight:bold;">Scan to Pay</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=restaurant@upi" alt="UPI QR">
+        </div>
+
+        <div id="cardInputBox" style="display: none; background: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px; margin-top: 15px;">
+            <p style="margin: 0 0 10px 0; font-weight: bold;">Enter Card Details</p>
+            <input type="text" placeholder="💳 Card Number (16 Digits)" class="input-box" style="margin-bottom: 8px;">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" placeholder="MM/YY" class="input-box">
+                <input type="text" placeholder="CVV" class="input-box">
+            </div>
+            <p style="color: #27ae60; font-size: 0.9rem; margin-top: 8px;">✔️ Amount to be charged: <b id="cardChargeAmount">₹0</b></p>
+        </div>
+        
+        <button class="action-btn" id="finalConfirmBtn" onclick="processOrder()">Confirm & Place Order ✔</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+    <div class="modal-content" style="text-align: center;">
+        <h1 style="font-size: 3rem; margin: 0;">🎉</h1>
+        <h2 style="color: #27ae60;">Order Confirmed!</h2>
+        <p style="font-size: 1.1rem; font-weight: bold;">Order ID: #<span id="genOrderId"></span></p>
+        
+        <div style="background: #e8f8f5; border: 1px solid #1abc9c; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+            <h4 style="margin: 0 0 5px 0; color: #16a085;">📱 SMS Dispatched to: +91 <span id="displaySentPhone"></span></h4>
+            <p style="margin: 0; font-size: 0.9rem; color: #333;">
+                "Hi <span id="receiptName"></span>, your Street Cafe order #<span id="receiptId"></span> is confirmed. Total: ₹<span id="receiptTotal"></span>. Track order on the website."
+            </p>
+        </div>
+        
+        <button class="action-btn" style="margin-top: 20px;" onclick="closeModal('successModal'); openTrackingDashboard();">Track Order Progress</button>
+    </div>
+</div>
+
+<script>
+    let isAdmin = false;
+    let loggedInAdminName = "";
+    let cart = [];
+    let currentCategory = "Combos & Offers 🎁";
+    let menuData = {}; 
+    let myOrderHistory = JSON.parse(localStorage.getItem('cafe_orders')) || [];
+
+    // DATA FETCH
+    async function loadMenuFromDatabase() {
+        try {
+            const response = await fetch('/api/menu');
+            const data = await response.json();
+            
+            menuData = {};
+            data.forEach(item => {
+                if(!menuData[item.category]) menuData[item.category] = [];
+                menuData[item.category].push({ icode: item.icode, n: item.idesc, p: item.price, f: item.flag, available: item.available === 1 });
+            });
+            renderTabs();
+        } catch (error) { 
+            document.getElementById('menuDisplay').innerHTML = "<p style='text-align:center;'>Database offline. Start server.js in terminal.</p>"; 
+        }
+    }
+
+    // 6. ADMIN LOGIN (Captures Name & Password)
+    function adminLogin() {
+        if(isAdmin) { 
+            isAdmin = false; 
+            document.getElementById('adminToggleBtn').innerText = "Admin Login"; 
+            document.getElementById('adminGreeting').innerText = "";
+            document.getElementById('adminDashBtn').style.display = "none";
+            renderMenu(currentCategory); 
+            return; 
+        }
+        
+        let adminName = prompt("Enter your Name (Admin):");
+        if(!adminName) return;
+
+        let pass = prompt("Enter Admin Password:");
+        if(pass === "delicious") { 
+            isAdmin = true; 
+            loggedInAdminName = adminName;
+            document.getElementById('adminToggleBtn').innerText = "Logout"; 
+            document.getElementById('adminGreeting').innerText = `| Welcome, ${adminName}`;
+            document.getElementById('adminDashBtn').style.display = "inline-block";
+            renderMenu(currentCategory); 
+        } else {
+            alert("Incorrect Password!");
+        }
+    }
+
+    // 4. ADMIN EDIT/DELETE FOOD UI
+    async function editItemData(icode, itemName, currentPrice) {
+        let newPrice = prompt(`Enter new price for ${itemName}:`, currentPrice);
+        if(!newPrice || isNaN(newPrice)) return;
+        let isAvail = confirm(`Is ${itemName} IN STOCK?\nOK = YES\nCancel = NO`);
+        try {
+            await fetch('/api/menu/update', {
+                method: 'PUT', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ icode: icode, newPrice: parseInt(newPrice), available: isAvail ? 1 : 0 })
+            });
+            loadMenuFromDatabase(); 
+        } catch (error) { alert("Server error updating item."); }
+    }
+
+    function deleteFoodItem(itemName) {
+        if(confirm(`Are you sure you want to permanently delete ${itemName}? (Requires server update to fully implement)`)) {
+            alert("Delete request sent. (Note: Ensure your server.js has a DELETE route configured to permanently drop this!)");
+            // Placeholder for future backend fetch call
+        }
+    }
+
+    function addFoodItem() {
+        let name = document.getElementById('newFoodName').value;
+        let price = document.getElementById('newFoodPrice').value;
+        if(!name || !price) return alert("Fill out food name and price.");
+        alert(`Request to add ${name} sent! (Note: Ensure your server.js has a POST route configured to save this!)`);
+    }
+
+    // TABS & RENDERING
+    function renderTabs() {
+        const container = document.getElementById('tabContainer');
+        container.innerHTML = "";
+        Object.keys(menuData).forEach((cat) => {
+            const btn = document.createElement('button');
+            btn.className = `tab-btn ${cat === currentCategory ? 'active' : ''}`;
+            btn.innerText = cat;
+            btn.onclick = () => renderMenu(cat, btn);
+            container.appendChild(btn);
+        });
+        renderMenu(currentCategory); 
+    }
+
+    function renderMenu(category, btnElement = null) {
+        currentCategory = category;
+        if(btnElement) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+        displayItems(menuData[category] || []);
+    }
+
+    function searchMenu() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        let results = [];
+        Object.values(menuData).forEach(arr => arr.forEach(i => { if(i.n.toLowerCase().includes(query)) results.push(i); }));
+        displayItems(results);
+    }
+
+    function displayItems(items) {
+        const grid = document.querySelector('.grid') || document.createElement('div');
+        if(!document.querySelector('.grid')) { grid.className = 'grid'; document.getElementById('menuDisplay').appendChild(grid); }
+        grid.innerHTML = "";
+
+        if(items.length === 0) { grid.innerHTML = "<p>No items found.</p>"; return; }
+
+        items.forEach((item) => {
+            const outOfStockHtml = !item.available ? `<span class="out-stock-badge">Out of Stock</span>` : '';
+            const imgClass = !item.available ? 'item-img dimmed' : 'item-img';
+            const imgUrl = `https://placehold.co/400x300/e67e22/ffffff?text=${encodeURIComponent(item.n)}`;
+            
+            let addBtn = !item.available ? `<button class="add-btn" disabled>Out of Stock</button>` : `<button class="add-btn" onclick="addToCart('${item.n}', ${item.p})">+ Add</button>`;
+            
+            // 4. Admin controls now have a Delete button
+            let adminBtn = isAdmin ? `
+                <button class="admin-edit-btn" onclick="editItemData(${item.icode}, '${item.n}', ${item.p})">✏️ Edit</button>
+                <button class="admin-del-btn" onclick="deleteFoodItem('${item.n}')">🗑️ Remove</button>
+            ` : '';
+
+            grid.innerHTML += `
+                <div class="item-card">
+                    ${item.f === 'special' ? `<span class="badge">🔥 Special</span>` : ''}
+                    ${outOfStockHtml}
+                    <img src="${imgUrl}" class="${imgClass}">
+                    <div class="item-info">
+                        <h4>${item.n}</h4><span class="price">₹${item.p}</span>
+                        ${addBtn} ${adminBtn}
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // CART
+    function viewCart() { if(cart.length === 0) return alert("Cart empty!"); renderModalItems(); openModal('cartModal'); }
+    function addToCart(n, p) { let ex = cart.find(i => i.name === n); if(ex) ex.qty++; else cart.push({name: n, price: p, qty: 1}); updateCartDisplay(); }
+    function changeQty(idx, amt) { cart[idx].qty += amt; if(cart[idx].qty <= 0) cart.splice(idx, 1); updateCartDisplay(); if(cart.length===0) closeModal('cartModal'); else renderModalItems(); }
+    function updateCartDisplay() {
+        let tot = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        document.getElementById('cart-count').innerText = `🛒 ${cart.reduce((s, i) => s + i.qty, 0)} Items`;
+        document.getElementById('cart-total').innerText = `Total: ₹${tot}`;
+        document.getElementById('pay-amount-display').innerText = `₹${tot}`;
+        document.getElementById('cardChargeAmount').innerText = `₹${tot}`; // Feature 3 logic
+    }
+    function renderModalItems() {
+        const list = document.getElementById('cart-items-list'); list.innerHTML = "";
+        cart.forEach((item, index) => {
+            list.innerHTML += `<div class="cart-item-row"><span>${item.name}<br>₹${item.price}</span><div class="qty-controls"><button class="qty-btn" onclick="changeQty(${index}, -1)">-</button><span>${item.qty}</span><button class="qty-btn" onclick="changeQty(${index}, 1)">+</button></div><b>₹${item.price * item.qty}</b></div>`;
+        });
+        document.getElementById('modal-total-display').innerText = `Total: ₹${cart.reduce((s, i) => s + (i.price * i.qty), 0)}`;
+    }
+
+    // CHECKOUT & PAYMENT UI
+    function proceedToCheckout() { closeModal('cartModal'); openModal('checkoutModal'); }
+    function proceedToPayment() {
+        const name = document.getElementById('custName').value;
+        const phone = document.getElementById('custPhone').value;
+        const address = document.getElementById('custAddress').value;
+        if(!name || !phone || !address) return alert("Please fill out all required fields marked with *");
+        closeModal('checkoutModal'); openModal('paymentModal');
+    }
+
+    // 3. Toggle Credit/Debit Card Fields automatically
+    function togglePaymentUI() {
+        let method = document.querySelector('input[name="pay_mode"]:checked').value;
+        document.getElementById('qrCodeBox').style.display = method === 'UPI' ? 'block' : 'none';
+        document.getElementById('cardInputBox').style.display = method === 'Card' ? 'block' : 'none';
+    }
+
+    // PROCESS ORDER
+    async function processOrder() {
+        const name = document.getElementById('custName').value;
+        const phone = document.getElementById('custPhone').value;
+        const totalAmount = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const method = document.querySelector('input[name="pay_mode"]:checked').value;
+        const schedTime = document.getElementById('scheduleTime').value;
+
+        try {
+            await fetch('/api/order', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ uname: name, unumber: phone, uaddress: document.getElementById('custAddress').value, total: totalAmount, pay_mode: method })
+            });
+
+            const orderId = Math.floor(Math.random() * 90000) + 10000;
+            
+            // Save locally for dashboard
+            myOrderHistory.unshift({ 
+                id: orderId, items: [...cart], total: totalAmount, 
+                date: new Date().toISOString().split('T')[0], // Save YYYY-MM-DD for searching
+                status: "Preparing", sched: schedTime 
+            });
+            localStorage.setItem('cafe_orders', JSON.stringify(myOrderHistory));
+
+            // Set SMS Data
+            document.getElementById('genOrderId').innerText = orderId;
+            document.getElementById('displaySentPhone').innerText = phone.slice(-10);
+            document.getElementById('receiptName').innerText = name.split(" ")[0];
+            document.getElementById('receiptId').innerText = orderId;
+            document.getElementById('receiptTotal').innerText = totalAmount;
+
+            closeModal('paymentModal');
+            cart = []; updateCartDisplay();
+            openModal('successModal');
+        } catch (error) { alert("Server error submitting order."); }
+    }
+
+    // 7. USER TRACKING DASHBOARD (Checklist UI)
+    function openTrackingDashboard() {
+        const list = document.getElementById('tracking-list');
+        list.innerHTML = myOrderHistory.length === 0 ? "<p>No orders yet.</p>" : myOrderHistory.map(order => `
+            <div class="order-history-card">
+                <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
+                    <span>Order #${order.id}</span><span>₹${order.total}</span>
+                </div>
+                <div class="tracking-list">
+                    <div class="track-step done">✅ Order Placed & Paid</div>
+                    <div class="track-step done">✅ Sent to Kitchen</div>
+                    <div class="track-step ${order.status === 'Preparing' ? '' : 'done'}">
+                        ${order.status === 'Preparing' ? '⏳' : '✅'} Preparing Food
+                    </div>
+                    <div class="track-step">🚚 Out for Delivery</div>
+                </div>
+            </div>
+        `).join('');
+        openModal('trackingModal');
+    }
+
+    // 10. ADMIN DASHBOARD & DATE SEARCH
+    function filterAdminOrders() {
+        const searchDate = document.getElementById('adminDateSearch').value;
+        const list = document.getElementById('admin-orders-list');
+        
+        let filtered = searchDate ? myOrderHistory.filter(o => o.date === searchDate) : myOrderHistory;
+        
+        let rev = 0;
+        list.innerHTML = filtered.length === 0 ? "<p>No orders found for this date.</p>" : filtered.map(order => {
+            rev += order.total;
+            return `
+            <div class="order-history-card" style="font-size: 0.9rem;">
+                <b>Order #${order.id}</b> | ₹${order.total} <br>
+                ${order.sched ? `<span style="color:#e74c3c;">⏰ Scheduled for: ${order.sched}</span><br>` : ''}
+                Items: ${order.items.map(i => i.qty + 'x ' + i.name).join(', ')}
+            </div>
+            `;
+        }).join('');
+        
+        document.getElementById('adminTotalRev').innerText = rev;
+    }
+
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+        if(id === 'adminDashboardModal') filterAdminOrders(); // Load all orders initially
+    }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // INIT
+    loadMenuFromDatabase();
+</script>
+</body>
+</html>
