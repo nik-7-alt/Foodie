@@ -220,7 +220,6 @@
         <button class="action-btn" style="margin-top: 20px;" onclick="closeModal('successModal'); openTrackingDashboard();">Track Order Progress</button>
     </div>
 </div>
-
 <script>
     let isAdmin = false;
     let loggedInAdminName = "";
@@ -287,19 +286,6 @@
         } catch (error) { alert("Server error updating item."); }
     }
 
-    function deleteFoodItem(itemName) {
-        if(confirm(`Are you sure you want to permanently delete ${itemName}? (Requires server update to fully implement)`)) {
-            alert("Delete request sent. (Note: Ensure your server.js has a DELETE route configured to permanently drop this!)");
-            // Placeholder for future backend fetch call
-        }
-    }
-
-    function addFoodItem() {
-        let name = document.getElementById('newFoodName').value;
-        let price = document.getElementById('newFoodPrice').value;
-        if(!name || !price) return alert("Fill out food name and price.");
-        alert(`Request to add ${name} sent! (Note: Ensure your server.js has a POST route configured to save this!)`);
-    }
 
     // TABS & RENDERING
     function renderTabs() {
